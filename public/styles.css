@@ -8,9 +8,23 @@ h2 {
   color: #575ed8;
 }
 
+@keyframes textfade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .card {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  animation: textfade 3s;
+
   color: black;
-  background-color: beige;
+  background-color: #edf2f4;
   width: 100px;
   height: 100px;
 }

@@ -25,10 +25,10 @@ const createColorSecrets = () => {
     const blueCol = Math.floor(Math.random() * WIDTH).toString();
     if (!colors[blueRow]) {
       colors[blueRow] = {};
-      colors[blueRow][blueCol] = '#2B2D42';
+      colors[blueRow][blueCol] = '#5386E4';
       currBlueTileCount++;
     } else if (!colors[blueRow][blueCol]) {
-      colors[blueRow][blueCol] = '#2B2D42';
+      colors[blueRow][blueCol] = '#5386E4';
       currBlueTileCount++;
     }
   }
@@ -73,7 +73,7 @@ const createBoard = () => {
       const color =
         colors[row.toString()] && colors[row.toString()][col.toString()]
           ? colors[row.toString()][col.toString()]
-          : '#F0E7D8';
+          : '#ABA8B2';
 
       const cardData = { word, color, flipped: false };
       currRowData.push(cardData);
@@ -95,7 +95,9 @@ spymasterBtn.addEventListener('click', function () {
 });
 
 const sendFlipCardEvent = (row, col) => {
-  socket.emit('flipCard', { row, col, boardData });
+  if (!spymaster) {
+    socket.emit('flipCard', { row, col, boardData });
+  }
 };
 
 // Drawing events on all UIs

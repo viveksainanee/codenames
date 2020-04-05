@@ -21,7 +21,7 @@ io.on('connection', function (socket) {
     io.sockets.emit('newGame', data);
   });
 
-  socket.on('typing', function (data) {
-    socket.broadcast.emit('typing', data);
+  socket.on('flipCard', function (data) {
+    io.sockets.emit('flipCard', data);
   });
 });

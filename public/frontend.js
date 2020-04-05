@@ -1,11 +1,16 @@
 //Make connection
 // const PORT = process.env.PORT || 4000;
 
-const socket = io.connect('https://codenames-vs.herokuapp.com');
+// const socket = io.connect('https://codenames.sainanee.com');
+const socket = io.connect('http://localhost:4000');
 
-const board = document.getElementById('board');
 const newGameBtn = document.getElementById('new-game');
 const spymasterBtn = document.getElementById('spymaster');
+const signUpBtn = document.getElementById('sign-up');
+
+const board = document.getElementById('board');
+const handle = document.getElementById('handle');
+const players = document.getElementById('players');
 
 const WIDTH = 5;
 const HEIGHT = 5;
@@ -13,71 +18,62 @@ const HEIGHT = 5;
 const BLUE_TILE_COUNT = 9;
 const RED_TILE_COUNT = 8;
 const BLACK_TILE_COUNT = 1;
+const NEUTRAL_TILE_COLOR = '#ABA8B2';
 
 let boardData = [];
 let spymaster = false;
 
 let colors = {};
 
-const createColorSecrets = () => {
+//////
+// CREATE BOARD DATA
+//////
+
+const generateTileCoordinates = (color, totalCount) => {
   // make blue tiles
-  let currBlueTileCount = 0;
-  while (currBlueTileCount < BLUE_TILE_COUNT) {
-    const blueRow = Math.floor(Math.random() * HEIGHT).toString();
-    const blueCol = Math.floor(Math.random() * WIDTH).toString();
-    if (!colors[blueRow]) {
-      colors[blueRow] = {};
-      colors[blueRow][blueCol] = '#5386E4';
-      currBlueTileCount++;
-    } else if (!colors[blueRow][blueCol]) {
-      colors[blueRow][blueCol] = '#5386E4';
-      currBlueTileCount++;
-    }
-  }
-  // make red tiles
-  let currRedTileCount = 0;
-  while (currRedTileCount < RED_TILE_COUNT) {
-    const redRow = Math.floor(Math.random() * HEIGHT).toString();
-    const redCol = Math.floor(Math.random() * WIDTH).toString();
-    if (!colors[redRow]) {
-      colors[redRow] = {};
-      colors[redRow][redCol] = '#D80032';
-      currRedTileCount++;
-    } else if (!colors[redRow][redCol]) {
-      colors[redRow][redCol] = '#D80032';
-      currRedTileCount++;
-    }
-  }
-  // make black tile
-  let currBlackTileCount = 0;
-  while (currBlackTileCount < BLACK_TILE_COUNT) {
-    const blackRow = Math.floor(Math.random() * HEIGHT).toString();
-    const blackCol = Math.floor(Math.random() * WIDTH).toString();
-    if (!colors[blackRow]) {
-      colors[blackRow] = {};
-      colors[blackRow][blackCol] = 'black';
-      currBlackTileCount++;
-    } else if (!colors[blackRow][blackCol]) {
-      colors[blackRow][blackCol] = 'black';
-      currBlackTileCount++;
+  let currTileCount = 0;
+  while (currTileCount < totalCount) {
+    const currRow = Math.floor(Math.random() * HEIGHT).toString();
+    const currCol = Math.floor(Math.random() * WIDTH).toString();
+    if (!colors[currRow]) {
+      colors[currRow] = {};
+      colors[currRow][currCol] = color;
+      currTileCount++;
+    } else if (!colors[currRow][currCol]) {
+      colors[currRow][currCol] = color;
+      currTileCount++;
     }
   }
 };
 
-// New Game UI creates data
+const createColorSecrets = () => {
+  // make blue
+  generateTileCoordinates('#5386E4', BLUE_TILE_COUNT);
+  // make red
+  generateTileCoordinates('#D80032', RED_TILE_COUNT);
+  // make black
+  generateTileCoordinates('black', BLACK_TILE_COUNT);
+};
+
+const pickRandomWord = () => {
+  //todo
+  return words[Math.floor(Math.random() * words.length)];
+};
+
 const createBoard = () => {
   createColorSecrets();
   for (let row = 0; row < HEIGHT; row++) {
     let currRowData = [];
     for (let col = 0; col < WIDTH; col++) {
-      const word = words[Math.floor(Math.random() * words.length)];
-
+      const rowStr = row.toString();
+      const colStr = col.toString();
+      const word = pickRandomWord();
       const color =
-        colors[row.toString()] && colors[row.toString()][col.toString()]
-          ? colors[row.toString()][col.toString()]
-          : '#ABA8B2';
+        colors[rowStr] && colors[rowStr][colStr]
+          ? colors[rowStr][colStr]
+          : NEUTRAL_TILE_COLOR;
 
-      const cardData = { word, color, flipped: false };
+      const cardData = { word, color };
       currRowData.push(cardData);
     }
     boardData.push(currRowData);
@@ -85,7 +81,10 @@ const createBoard = () => {
   return boardData;
 };
 
-// emit event when someone hits send
+//////
+// EVENT HANDLING
+//////
+
 newGameBtn.addEventListener('click', function () {
   const boardData = createBoard();
   socket.emit('newGame', { boardData });
@@ -96,14 +95,38 @@ spymasterBtn.addEventListener('click', function () {
   spymasterBtn.remove();
 });
 
+signUpBtn.addEventListener('click', function () {
+  socket.emit('addPlayer', { handle: handle.value });
+});
+
 const sendFlipCardEvent = (row, col) => {
   if (!spymaster) {
     socket.emit('flipCard', { row, col, boardData });
   }
 };
 
-// Drawing events on all UIs
-const drawBoard = (data) => {
+//////
+// SOCKET LISTENERS
+//////
+
+socket.on('newGame', function (data) {
+  drawBoardElements(data);
+  newGameBtn.remove();
+  spymasterBtn.remove();
+});
+
+socket.on('flipCard', function (data) {
+  flipCardElement(data);
+});
+
+socket.on('addPlayer', function (data) {
+  addPlayerElement(data);
+});
+
+//////
+// SOCKET HANDLERS
+//////
+const drawBoardElements = (data) => {
   boardData = data.boardData;
   let container = document.createElement('div');
   container.setAttribute('class', 'container');
@@ -114,40 +137,33 @@ const drawBoard = (data) => {
       let card = document.createElement('div');
       card.setAttribute('class', `card ${rowIdx}-${colIdx} text-center`);
       card.innerHTML += `${boardData[rowIdx][colIdx].word}`;
-      const color = boardData[rowIdx][colIdx].color;
       // for spymasters only
       if (spymaster) {
+        const color = boardData[rowIdx][colIdx].color;
         card.style.color = color;
       }
-      if (boardData[rowIdx][colIdx].flipped) {
-        card.style.backgroundColor = color;
-      }
-      row.appendChild(card);
       card.addEventListener('click', () => sendFlipCardEvent(rowIdx, colIdx));
+      row.appendChild(card);
     }
     container.appendChild(row);
   }
   board.appendChild(container);
-  newGameBtn.remove();
-  spymasterBtn.remove();
 };
 
-const flipCard = (data) => {
+const flipCardElement = (data) => {
   const row = data.row;
   const col = data.col;
   const card = document.getElementsByClassName(`${row}-${col}`)[0];
-  console.log('data', data);
   card.style.backgroundColor = data.boardData[row][col].color;
+  card.style.color = 'white';
 };
 
-// Listen for events
-socket.on('newGame', function (data) {
-  drawBoard(data);
-});
-
-socket.on('flipCard', function (data) {
-  flipCard(data);
-});
+const addPlayerElement = (data) => {
+  console.log('addplayerelement');
+  let newPlayer = document.createElement('div');
+  newPlayer.innerHTML = data.handle;
+  players.appendChild(newPlayer);
+};
 
 const words = [
   ' AFRICA	',

@@ -24,4 +24,8 @@ io.on('connection', function (socket) {
   socket.on('flipCard', function (data) {
     io.sockets.emit('flipCard', data);
   });
+
+  socket.on('addPlayer', function (data) {
+    io.sockets.emit('addPlayer', data);
+  });
 });

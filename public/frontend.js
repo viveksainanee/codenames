@@ -1,5 +1,7 @@
 //Make connection
-const socket = io.connect('http://localhost:4000');
+const PORT = process.env.PORT || 4000;
+
+const socket = io.connect('https://codenames-vs.herokuapp.com/');
 
 const board = document.getElementById('board');
 const newGameBtn = document.getElementById('new-game');

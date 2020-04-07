@@ -24,6 +24,7 @@ let boardData = [];
 let spymaster = false;
 
 let colors = {};
+let playersData = [];
 
 //////
 // CREATE BOARD DATA
@@ -85,6 +86,11 @@ const createBoard = () => {
 // EVENT HANDLING
 //////
 
+const loadInitialData = () => {
+  socket.emit('requestData');
+};
+loadInitialData();
+
 newGameBtn.addEventListener('click', function () {
   const boardData = createBoard();
   socket.emit('newGame', { boardData });
@@ -96,7 +102,10 @@ spymasterBtn.addEventListener('click', function () {
 });
 
 signUpBtn.addEventListener('click', function () {
-  socket.emit('addPlayer', { handle: handle.value });
+  playersData.push({ handle: handle.value });
+  socket.emit('addPlayer', { handle: handle.value, playersData });
+  handle.remove();
+  signUpBtn.remove();
 });
 
 const sendFlipCardEvent = (row, col) => {
@@ -105,9 +114,26 @@ const sendFlipCardEvent = (row, col) => {
   }
 };
 
+////
+window.onbeforeunload = () => {
+  // socket.emit('removePlayer', //}); send my handle name
+};
+
 //////
 // SOCKET LISTENERS
 //////
+
+socket.on('requestData', function (data) {
+  socket.emit('syncData', { playersData });
+});
+
+socket.on('syncData', function (data) {
+  // to do here - troubleshoot why no data appears on initial load
+  if (playersData.length === 0) {
+    playersData = data.playersData;
+    playersData.forEach((playerData) => addPlayerElement(playerData));
+  }
+});
 
 socket.on('newGame', function (data) {
   drawBoardElements(data);
@@ -126,6 +152,7 @@ socket.on('addPlayer', function (data) {
 //////
 // SOCKET HANDLERS
 //////
+
 const drawBoardElements = (data) => {
   boardData = data.boardData;
   let container = document.createElement('div');
@@ -159,7 +186,6 @@ const flipCardElement = (data) => {
 };
 
 const addPlayerElement = (data) => {
-  console.log('addplayerelement');
   let newPlayer = document.createElement('div');
   newPlayer.innerHTML = data.handle;
   players.appendChild(newPlayer);

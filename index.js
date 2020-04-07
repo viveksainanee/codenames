@@ -17,6 +17,14 @@ app.use(express.static('public'));
 const io = socket(server);
 
 io.on('connection', function (socket) {
+  socket.on('requestData', function (data) {
+    io.sockets.emit('requestData', data);
+  });
+
+  socket.on('syncData', function (data) {
+    io.sockets.emit('syncData', data);
+  });
+
   socket.on('newGame', function (data) {
     io.sockets.emit('newGame', data);
   });

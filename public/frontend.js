@@ -1,7 +1,7 @@
 //Make connection
 
-const PORT = 'codenames.sainanee.com';
-// const PORT = 'localhost:4000';
+// const PORT = 'codenames.sainanee.com';
+const PORT = 'localhost:4000';
 
 const socket = io.connect(`http://${PORT}`);
 
@@ -22,10 +22,11 @@ const BLACK_TILE_COUNT = 1;
 const NEUTRAL_TILE_COLOR = '#ABA8B2';
 
 let boardData = [];
-let spymaster = false;
-
 let colors = {};
 let playersData = [];
+
+let spymaster = false;
+let myHandle = null;
 
 //////
 // CREATE BOARD DATA
@@ -58,18 +59,22 @@ const createColorSecrets = () => {
 };
 
 const pickRandomWord = () => {
-  //todo
   return words[Math.floor(Math.random() * words.length)];
 };
 
 const createBoard = () => {
   createColorSecrets();
+  let usedWords = [];
   for (let row = 0; row < HEIGHT; row++) {
     let currRowData = [];
     for (let col = 0; col < WIDTH; col++) {
       const rowStr = row.toString();
       const colStr = col.toString();
-      const word = pickRandomWord();
+      let word = pickRandomWord();
+      while (usedWords.includes(word)) {
+        word = pickRandomWord();
+      }
+      usedWords.push(word);
       const color =
         colors[rowStr] && colors[rowStr][colStr]
           ? colors[rowStr][colStr]
@@ -103,8 +108,8 @@ spymasterBtn.addEventListener('click', function () {
 });
 
 signUpBtn.addEventListener('click', function () {
-  playersData.push({ handle: handle.value });
-  socket.emit('addPlayer', { handle: handle.value, playersData });
+  myHandle = handle.value;
+  socket.emit('addPlayer', { handle: handle.value });
   handle.remove();
   signUpBtn.remove();
 });
@@ -115,9 +120,8 @@ const sendFlipCardEvent = (row, col) => {
   }
 };
 
-////
 window.onbeforeunload = () => {
-  // socket.emit('removePlayer', //}); send my handle name
+  socket.emit('removePlayer', { handleToRemove: myHandle });
 };
 
 //////
@@ -125,14 +129,15 @@ window.onbeforeunload = () => {
 //////
 
 socket.on('requestData', function (data) {
-  socket.emit('syncData', { playersData });
+  socket.emit('syncInitialData', { playersData });
 });
 
-socket.on('syncData', function (data) {
-  // to do here - troubleshoot why no data appears on initial load
-  if (playersData.length === 0) {
+socket.on('syncInitialData', function (data) {
+  const hasNoPlayersYet = playersData.length === 0;
+
+  if (hasNoPlayersYet) {
     playersData = data.playersData;
-    playersData.forEach((playerData) => addPlayerElement(playerData));
+    playersData.forEach((handle) => addPlayer({ handle }));
   }
 });
 
@@ -147,7 +152,11 @@ socket.on('flipCard', function (data) {
 });
 
 socket.on('addPlayer', function (data) {
-  addPlayerElement(data);
+  addPlayer(data);
+});
+
+socket.on('removePlayer', function (data) {
+  removePlayerElement(data);
 });
 
 //////
@@ -186,10 +195,25 @@ const flipCardElement = (data) => {
   card.style.color = 'white';
 };
 
-const addPlayerElement = (data) => {
+const addPlayer = (data) => {
+  playersData.push(data.handle);
   let newPlayer = document.createElement('div');
+  newPlayer.setAttribute('class', data.handle);
   newPlayer.innerHTML = data.handle;
   players.appendChild(newPlayer);
+};
+
+const removePlayerElement = (data) => {
+  //remove div
+  console.log('before', playersData);
+  const handleToRemove = data.handleToRemove;
+  const divToRemove = document.getElementsByClassName(`${handleToRemove}`)[0];
+  divToRemove.remove();
+  //remove from playersData
+  const playerIndex = playersData.indexOf(handleToRemove);
+  if (playerIndex > -1) {
+    playersData.splice(playerIndex, 1);
+  }
 };
 
 const words = [

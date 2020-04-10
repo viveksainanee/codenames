@@ -21,8 +21,8 @@ io.on('connection', function (socket) {
     io.sockets.emit('requestData', data);
   });
 
-  socket.on('syncData', function (data) {
-    io.sockets.emit('syncData', data);
+  socket.on('syncInitialData', function (data) {
+    io.sockets.emit('syncInitialData', data);
   });
 
   socket.on('newGame', function (data) {
@@ -35,5 +35,9 @@ io.on('connection', function (socket) {
 
   socket.on('addPlayer', function (data) {
     io.sockets.emit('addPlayer', data);
+  });
+
+  socket.on('removePlayer', function (data) {
+    io.sockets.emit('removePlayer', data);
   });
 });

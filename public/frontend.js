@@ -14,6 +14,7 @@ const signUpBtn = document.getElementById('sign-up');
 const board = document.getElementById('board');
 const handle = document.getElementById('handle');
 const players = document.getElementById('players');
+let scoreboardDiv;
 
 const WIDTH = 5;
 const HEIGHT = 5;
@@ -22,12 +23,16 @@ const BLUE_TILE_COUNT = 8 + Math.floor(Math.random() * 2);
 const RED_TILE_COUNT = 17 - BLUE_TILE_COUNT;
 const BLACK_TILE_COUNT = 1;
 const NEUTRAL_TILE_COLOR = '#ABA8B2';
+const BLUE_TILE_COLOR = '#5386E4';
+const RED_TILE_COLOR = '#D80032';
 
-let boardData = [];
-let playersData = [];
+let gameState = {
+  boardData: [],
+  playersData: [],
+  scoreboard: {},
+};
 
 let spymaster = false;
-let host = false;
 let myHandle = null;
 
 //////
@@ -55,9 +60,13 @@ const addTileColorCoords = (colorCoords, color, totalCount) => {
 const createColorCoords = () => {
   let colorCoords = {};
   // make blue
-  colorCoords = addTileColorCoords(colorCoords, '#5386E4', BLUE_TILE_COUNT);
+  colorCoords = addTileColorCoords(
+    colorCoords,
+    BLUE_TILE_COLOR,
+    BLUE_TILE_COUNT
+  );
   // make red
-  colorCoords = addTileColorCoords(colorCoords, '#D80032', RED_TILE_COUNT);
+  colorCoords = addTileColorCoords(colorCoords, RED_TILE_COLOR, RED_TILE_COUNT);
   // make black
   colorCoords = addTileColorCoords(colorCoords, 'black', BLACK_TILE_COUNT);
   return colorCoords;
@@ -88,9 +97,8 @@ const createBoard = () => {
       const cardData = { word, color };
       currRowData.push(cardData);
     }
-    boardData.push(currRowData);
+    gameState.boardData.push(currRowData);
   }
-  return boardData;
 };
 
 //////
@@ -103,8 +111,14 @@ const loadInitialData = () => {
 loadInitialData();
 
 newGameBtn.addEventListener('click', function () {
-  const boardData = createBoard();
-  socket.emit('newGame', { boardData });
+  createBoard();
+  let scoreboard = {
+    currBlue: 0,
+    currRed: 0,
+    totalBlue: BLUE_TILE_COUNT,
+    totalRed: RED_TILE_COUNT,
+  };
+  socket.emit('newGame', { boardData: gameState.boardData, scoreboard });
 });
 
 spymasterBtn.addEventListener('click', function () {
@@ -115,17 +129,21 @@ spymasterBtn.addEventListener('click', function () {
 
 signUpBtn.addEventListener('click', function () {
   myHandle = handle.value;
-  socket.emit('addPlayer', { handle: handle.value });
-  handle.remove();
-  signUpBtn.remove();
-  spymasterBtn.hidden = false;
+  if (handle.value === '') {
+    alert('Please Enter Something!');
+  } else {
+    socket.emit('addPlayer', { handle: handle.value });
+    handle.remove();
+    signUpBtn.remove();
+    spymasterBtn.hidden = false;
+  }
 });
 
 const sendFlipCardEvent = (row, col) => {
   if (!myHandle) {
     alert('Wait for next game bro');
   } else if (!spymaster) {
-    socket.emit('flipCard', { row, col, boardData });
+    socket.emit('flipCard', { row, col });
   }
 };
 
@@ -138,18 +156,18 @@ window.onbeforeunload = () => {
 //////
 
 socket.on('requestData', function (data) {
-  socket.emit('syncInitialData', { playersData, boardData });
+  socket.emit('syncInitialData', gameState);
 });
 
 socket.on('syncInitialData', function (data) {
-  const haventSyncedYet = playersData.length === 0;
+  const haventSyncedYet = gameState.playersData.length === 0;
 
   if (haventSyncedYet) {
-    playersData = data.playersData;
-    playersData.forEach((handle) => addPlayer({ handle }));
+    gameState.playersData = data.playersData;
+    gameState.playersData.forEach((handle) => addPlayer({ handle }));
 
     if (data.boardData.length !== 0) {
-      boardData = data.boardData;
+      gameState.boardData = data.boardData;
       drawBoardElements(data);
       homePage.remove();
     }
@@ -182,19 +200,27 @@ socket.on('removePlayer', function (data) {
 //////
 
 const drawBoardElements = (data) => {
-  boardData = data.boardData;
+  gameState.boardData = data.boardData;
+  gameState.scoreboard = data.scoreboard;
+  console.log('gameState', gameState);
+  console.log('data', data);
+
+  scoreboardDiv = document.createElement('div');
+  scoreboardDiv.innerHTML = `Blue: 0/${gameState.scoreboard.totalBlue} ; Red: 0/${gameState.scoreboard.totalRed}`;
+  players.appendChild(scoreboardDiv);
+
   let container = document.createElement('div');
   container.setAttribute('class', 'container');
-  for (let rowIdx = 0; rowIdx < boardData.length; rowIdx++) {
+  for (let rowIdx = 0; rowIdx < gameState.boardData.length; rowIdx++) {
     let row = document.createElement('div');
     row.setAttribute('class', 'row');
-    for (let colIdx = 0; colIdx < boardData.length; colIdx++) {
+    for (let colIdx = 0; colIdx < gameState.boardData.length; colIdx++) {
       let card = document.createElement('div');
       card.setAttribute('class', `card ${rowIdx}-${colIdx} text-center`);
-      card.innerHTML += `${boardData[rowIdx][colIdx].word}`;
+      card.innerHTML += `${gameState.boardData[rowIdx][colIdx].word}`;
       // for spymasters only
       if (spymaster) {
-        const color = boardData[rowIdx][colIdx].color;
+        const color = gameState.boardData[rowIdx][colIdx].color;
         card.style.color = color;
       }
       card.addEventListener('click', () => sendFlipCardEvent(rowIdx, colIdx));
@@ -209,12 +235,21 @@ const flipCardElement = (data) => {
   const row = data.row;
   const col = data.col;
   const card = document.getElementsByClassName(`${row}-${col}`)[0];
-  card.style.backgroundColor = data.boardData[row][col].color;
+  const flippedCardColor = gameState.boardData[row][col].color;
+  const { currBlue, totalBlue, currRed, totalRed } = gameState.scoreboard;
+  if (flippedCardColor === BLUE_TILE_COLOR) {
+    gameState.scoreboard.currBlue++;
+    scoreboardDiv.innerHTML = `Blue: ${gameState.scoreboard.currBlue}/${totalBlue} ; Red: ${currRed}/${totalRed}`;
+  } else if (flippedCardColor === RED_TILE_COLOR) {
+    gameState.scoreboard.currRed++;
+    scoreboardDiv.innerHTML = `Blue: ${currBlue}/${totalBlue} ; Red: ${gameState.scoreboard.currRed}/${totalRed}`;
+  }
+  card.style.backgroundColor = flippedCardColor;
   card.style.color = 'white';
 };
 
 const addPlayer = (data) => {
-  playersData.push(data.handle);
+  gameState.playersData.push(data.handle);
   let newPlayer = document.createElement('div');
   newPlayer.setAttribute('class', data.handle);
   newPlayer.innerHTML = data.handle;
@@ -235,9 +270,9 @@ const removePlayerElement = (data) => {
   const divToRemove = document.getElementsByClassName(`${handleToRemove}`)[0];
   divToRemove.remove();
   //remove from playersData
-  const playerIndex = playersData.indexOf(handleToRemove);
+  const playerIndex = gameState.playersData.indexOf(handleToRemove);
   if (playerIndex > -1) {
-    playersData.splice(playerIndex, 1);
+    gameState.playersData.splice(playerIndex, 1);
   }
 };
 

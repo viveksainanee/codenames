@@ -8,12 +8,14 @@ const socket = io.connect(`http://${PORT}`);
 const homePage = document.getElementById('homepage');
 
 const newGameBtn = document.getElementById('new-game');
-let spymasterBtn = document.getElementById('spymaster');
 const signUpBtn = document.getElementById('sign-up');
+let spymasterBtn = document.getElementById('spymaster');
+let endGameBtn;
 
 const board = document.getElementById('board');
 const handle = document.getElementById('handle');
 const players = document.getElementById('players');
+const gameDataDiv = document.getElementById('game-data');
 let scoreboardDiv;
 
 const WIDTH = 5;
@@ -147,6 +149,10 @@ const sendFlipCardEvent = (row, col) => {
   }
 };
 
+const endGameEvent = () => {
+  socket.emit('endGame');
+};
+
 window.onbeforeunload = () => {
   socket.emit('removePlayer', { handleToRemove: myHandle });
 };
@@ -163,11 +169,10 @@ socket.on('syncInitialData', function (data) {
   const haventSyncedYet = gameState.playersData.length === 0;
 
   if (haventSyncedYet) {
-    gameState.playersData = data.playersData;
+    gameState = data;
     gameState.playersData.forEach((handle) => addPlayer({ handle }));
 
     if (data.boardData.length !== 0) {
-      gameState.boardData = data.boardData;
       drawBoardElements(data);
       homePage.remove();
     }
@@ -191,6 +196,10 @@ socket.on('addSpymaster', function (data) {
   addSpymaster(data);
 });
 
+socket.on('endGame', function (data) {
+  endGame();
+});
+
 socket.on('removePlayer', function (data) {
   removePlayerElement(data);
 });
@@ -202,11 +211,9 @@ socket.on('removePlayer', function (data) {
 const drawBoardElements = (data) => {
   gameState.boardData = data.boardData;
   gameState.scoreboard = data.scoreboard;
-  console.log('gameState', gameState);
-  console.log('data', data);
 
   scoreboardDiv = document.createElement('div');
-  scoreboardDiv.innerHTML = `Blue: 0/${gameState.scoreboard.totalBlue} ; Red: 0/${gameState.scoreboard.totalRed}`;
+  scoreboardDiv.innerHTML = `Blue: 0/${gameState.scoreboard.totalBlue} - Red: 0/${gameState.scoreboard.totalRed}`;
   players.appendChild(scoreboardDiv);
 
   let container = document.createElement('div');
@@ -229,6 +236,11 @@ const drawBoardElements = (data) => {
     container.appendChild(row);
   }
   board.appendChild(container);
+  endGameBtn = document.createElement('button');
+  endGameBtn.innerText = 'End Game';
+  endGameBtn.addEventListener('click', endGameEvent);
+
+  gameDataDiv.appendChild(endGameBtn);
 };
 
 const flipCardElement = (data) => {
@@ -242,7 +254,7 @@ const flipCardElement = (data) => {
     scoreboardDiv.innerHTML = `Blue: ${gameState.scoreboard.currBlue}/${totalBlue} ; Red: ${currRed}/${totalRed}`;
   } else if (flippedCardColor === RED_TILE_COLOR) {
     gameState.scoreboard.currRed++;
-    scoreboardDiv.innerHTML = `Blue: ${currBlue}/${totalBlue} ; Red: ${gameState.scoreboard.currRed}/${totalRed}`;
+    scoreboardDiv.innerHTML = `Blue: ${currBlue}/${totalBlue} - Red: ${gameState.scoreboard.currRed}/${totalRed}`;
   }
   card.style.backgroundColor = flippedCardColor;
   card.style.color = 'white';
@@ -262,6 +274,16 @@ const addSpymaster = (data) => {
   let spymasterLabel = document.createElement('span');
   spymasterLabel.innerHTML = ' - spymaster ';
   handleDiv.append(spymasterLabel);
+};
+
+const endGame = () => {
+  // console.log()
+  gameState = {
+    boardData: [],
+    playersData: [],
+    scoreboard: {},
+  };
+  window.location.reload();
 };
 
 const removePlayerElement = (data) => {
@@ -354,28 +376,28 @@ const words = [
   '	CLIFF	',
   '	CLOAK	',
   '	CLUB	',
-  '	CODE	',
-  '	COLD	',
-  '	COMIC	',
-  '	COMPOUND	',
-  '	CONCERT	',
-  '	CONDUCTOR	',
-  '	CONTRACT	',
-  '	COOK	',
-  '	COPPER	',
-  '	COTTON	',
-  '	COURT	',
-  '	COVER	',
-  '	CRANE	',
-  '	CRASH	',
-  '	CRICKET	',
-  '	CROSS	',
-  '	CROWN	',
-  '	CYCLE	',
-  '	CZECH	',
-  '	DANCE	',
-  '	DATE	',
-  '	DAY	',
+  // '	CODE	',
+  // '	COLD	',
+  // '	COMIC	',
+  // '	COMPOUND	',
+  // '	CONCERT	',
+  // '	CONDUCTOR	',
+  // '	CONTRACT	',
+  // '	COOK	',
+  // '	COPPER	',
+  // '	COTTON	',
+  // '	COURT	',
+  // '	COVER	',
+  // '	CRANE	',
+  // '	CRASH	',
+  // '	CRICKET	',
+  // '	CROSS	',
+  // '	CROWN	',
+  // '	CYCLE	',
+  // '	CZECH	',
+  // '	DANCE	',
+  // '	DATE	',
+  // '	DAY	',
   '	DEATH	',
   '	DECK	',
   '	DEGREE	',
@@ -388,37 +410,36 @@ const words = [
   '	DRAFT	',
   '	DRAGON	',
   '	DRESS	',
-  '	DRILL	',
-  '	DROP	',
-  '	DUCK	',
-  '	DWARF	',
-  '	EAGLE	',
-  '	EGYPT	',
-  '	EMBASSY	',
-  '	ENGINE	',
-  '	ENGLAND	',
-  '	EUROPE	',
-  '	EYE	',
-  '	FACE	',
-  '	FAIR	',
-  '	FALL	',
-  '	FAN	',
-  '	FENCE	',
-  '	FIELD	',
-  '	FIGHTER	',
-  '	FIGURE	',
-  '	FILE	',
-  '	FILM	',
-  '	FIRE	',
-  '	FISH	',
-  '	FLUTE	',
-  '	FLY	',
+  // '	DRILL	',
+  // '	DROP	',
+  // '	DUCK	',
+  // '	DWARF	',
+  // '	EAGLE	',
+  // '	EGYPT	',
+  // '	EMBASSY	',
+  // '	ENGINE	',
+  // '	ENGLAND	',
+  // '	EUROPE	',
+  // '	EYE	',
+  // '	FACE	',
+  // '	FAIR	',
+  // '	FALL	',
+  // '	FAN	',
+  // '	FENCE	',
+  // '	FIELD	',
+  // '	FIGHTER	',
+  // '	FIGURE	',
+  // '	FILE	',
+  // '	FILM	',
+  // '	FIRE	',
+  // '	FISH	',
+  // '	FLUTE	',
+  // '	FLY	',
   '	FOOT	',
   '	FORCE	',
   '	FOREST	',
   '	FORK	',
   '	FRANCE	',
-  '	GAME	',
   '	GAS	',
   '	GENIUS	',
   '	GERMANY	',
@@ -531,10 +552,10 @@ const words = [
   '	PARACHUTE	',
   '	PARK	',
   '	PART	',
-  '	PASS	',
-  '	PASTE	',
-  '	PENGUIN	',
-  '	PHOENIX	',
+  // '	PASS	',
+  // '	PASTE	',
+  // '	PENGUIN	',
+  // '	PHOENIX	',
   '	PIANO	',
   '	PIE	',
   '	PILOT	',
@@ -554,42 +575,42 @@ const words = [
   '	POISON	',
   '	POLE	',
   '	POLICE	',
-  '	POOL	',
-  '	PORT	',
-  '	POST	',
-  '	POUND	',
-  '	PRESS	',
-  '	PRINCESS	',
-  '	PUMPKIN	',
-  '	PUPIL	',
-  '	PYRAMID	',
-  '	QUEEN	',
-  '	RABBIT	',
-  '	RACKET	',
-  '	RAY	',
-  '	REVOLUTION	',
-  '	RING	',
-  '	ROBIN	',
-  '	ROBOT	',
-  '	ROCK	',
-  '	ROME	',
-  '	ROOT	',
-  '	ROSE	',
-  '	ROULETTE	',
-  '	ROUND	',
-  '	ROW	',
-  '	RULER	',
-  '	SATELLITE	',
-  '	SATURN	',
-  '	SCALE	',
-  '	SCHOOL	',
-  '	SCIENTIST	',
-  '	SCORPION	',
-  '	SCREEN	',
-  '	SCUBA DIVER	',
-  '	SEAL	',
-  '	SERVER	',
-  '	SHADOW	',
+  // '	POOL	',
+  // '	PORT	',
+  // '	POST	',
+  // '	POUND	',
+  // '	PRESS	',
+  // '	PRINCESS	',
+  // '	PUMPKIN	',
+  // '	PUPIL	',
+  // '	PYRAMID	',
+  // '	QUEEN	',
+  // '	RABBIT	',
+  // '	RACKET	',
+  // '	RAY	',
+  // '	REVOLUTION	',
+  // '	RING	',
+  // '	ROBIN	',
+  // '	ROBOT	',
+  // '	ROCK	',
+  // '	ROME	',
+  // '	ROOT	',
+  // '	ROSE	',
+  // '	ROULETTE	',
+  // '	ROUND	',
+  // '	ROW	',
+  // '	RULER	',
+  // '	SATELLITE	',
+  // '	SATURN	',
+  // '	SCALE	',
+  // '	SCHOOL	',
+  // '	SCIENTIST	',
+  // '	SCORPION	',
+  // '	SCREEN	',
+  // '	SCUBA DIVER	',
+  // '	SEAL	',
+  // '	SERVER	',
+  // '	SHADOW	',
   '	SHAKESPEARE	',
   '	SHARK	',
   '	SHIP	',
@@ -606,31 +627,31 @@ const words = [
   '	SOCK	',
   '	SOLDIER	',
   '	SOUL	',
-  '	SOUND	',
-  '	SPACE	',
-  '	SPELL	',
-  '	SPIDER	',
-  '	SPIKE	',
-  '	SPINE	',
-  '	SPOT	',
-  '	SPRING	',
-  '	SPY	',
-  '	SQUARE	',
-  '	STADIUM	',
-  '	STAFF	',
-  '	STAR	',
-  '	STATE	',
-  '	STICK	',
-  '	STOCK	',
-  '	STRAW	',
-  '	STREAM	',
-  '	STRIKE	',
-  '	STRING	',
-  '	SUB	',
-  '	SUIT	',
-  '	SUPERHERO	',
-  '	SWING	',
-  '	SWITCH	',
+  // '	SOUND	',
+  // '	SPACE	',
+  // '	SPELL	',
+  // '	SPIDER	',
+  // '	SPIKE	',
+  // '	SPINE	',
+  // '	SPOT	',
+  // '	SPRING	',
+  // '	SPY	',
+  // '	SQUARE	',
+  // '	STADIUM	',
+  // '	STAFF	',
+  // '	STAR	',
+  // '	STATE	',
+  // '	STICK	',
+  // '	STOCK	',
+  // '	STRAW	',
+  // '	STREAM	',
+  // '	STRIKE	',
+  // '	STRING	',
+  // '	SUB	',
+  // '	SUIT	',
+  // '	SUPERHERO	',
+  // '	SWING	',
+  // '	SWITCH	',
   '	TABLE	',
   '	TABLET	',
   '	TAG	',
@@ -677,4 +698,57 @@ const words = [
   '	WITCH	',
   '	WORM	',
   '	YARD	',
+  'SPACE NEEDLE',
+  'PUDGET',
+  'KERRY PARK',
+  'DOUGH ZONE',
+  'LAKE UNION',
+  'BALLARD',
+  'STARBUCKS',
+  'GREENLAKE',
+  'DISCOVERY',
+  'CALIFORNIA',
+  'PORTLAND',
+  'VANCOUVER',
+  'SEATTLE FREEZE',
+  'AMAZON',
+  'PACIFIC',
+  'RAINIER',
+  // 'APOCALYPSE',
+  // 'CORONA',
+  'COVID-19',
+  // 'DISTANCING',
+  // 'CONTAMINATED',
+  // 'HANDWASHING',
+  // 'FACE MASK',
+  'COFFEE',
+  'LATTE',
+  'SUSHI',
+  'QUESO',
+  'BURRITO',
+  'CHICKEN NUGGET',
+  'DUMPLING',
+  'COOKIE',
+  'BROWNIE',
+  'FRIES',
+  'BURGER',
+  'MATCHA',
+  'LOLLIPOP',
+  'PRETZEL',
+  'RICE',
+  'DONUT',
+  'CROISSANT',
+  'COOKIE DOUGH',
+  'CORN',
+  'TOMATO',
+  'DRUMSTICK',
+  'PIZZA',
+  'PINEAPPLE',
+  'STRAWBERRY',
+  'SPAGHETTI',
+  'SHRIMP',
+  'TACO',
+  'BULGOGI',
+  'GALBI',
+  'AVOCADO',
 ];

@@ -13,20 +13,23 @@
 
 </head>
 <body>
-<div id="board" class="m-5">   
-</div>
-<div id="game-data">
-  <div id="players">Players</div>
+  <div id="homepage">  
+    <h1>Covidnames</h1>
+    <button hidden id="spymaster">Make me spymaster</button>
+    <form id="sign-up-form">
+      <input id="handle" type="text" placeholder="Enter your name" />
+      <button id="sign-up">Sign up</button>  
+    </form>
+    <br>
 
-</div>
-<div id="homepage">   
-  <button id="new-game">Start Game</button> 
-  <button hidden id="spymaster">Make me spymaster</button>
-  <form id="sign-up-form">
-    <input id="handle" type="text" placeholder="Enter your name" />
-    <button id="sign-up">Sign up</button>  
-  </form>
-</div>
+    When everyone is signed up, press new game!
+
+    <button id="new-game">New Game</button> 
+  </div>
+  <div id="board" class="m-5"></div>
+  <div id="game-data">
+    <h3 id="players">Players</h3>
+  </div>
 <script src="/frontend.js"></script>
   
 </body>

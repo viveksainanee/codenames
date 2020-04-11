@@ -1,12 +1,14 @@
 //Make connection
 
-// const PORT = 'codenames.sainanee.com';
-const PORT = 'localhost:4000';
+const PORT = 'codenames.sainanee.com';
+// const PORT = 'localhost:4000';
 
 const socket = io.connect(`http://${PORT}`);
 
+const homePage = document.getElementById('homepage');
+
 const newGameBtn = document.getElementById('new-game');
-const spymasterBtn = document.getElementById('spymaster');
+let spymasterBtn = document.getElementById('spymaster');
 const signUpBtn = document.getElementById('sign-up');
 
 const board = document.getElementById('board');
@@ -16,46 +18,49 @@ const players = document.getElementById('players');
 const WIDTH = 5;
 const HEIGHT = 5;
 
-const BLUE_TILE_COUNT = 9;
-const RED_TILE_COUNT = 8;
+const BLUE_TILE_COUNT = 8 + Math.floor(Math.random() * 2);
+const RED_TILE_COUNT = 17 - BLUE_TILE_COUNT;
 const BLACK_TILE_COUNT = 1;
 const NEUTRAL_TILE_COLOR = '#ABA8B2';
 
 let boardData = [];
-let colors = {};
 let playersData = [];
 
 let spymaster = false;
+let host = false;
 let myHandle = null;
 
 //////
 // CREATE BOARD DATA
 //////
 
-const generateTileCoordinates = (color, totalCount) => {
+const addTileColorCoords = (colorCoords, color, totalCount) => {
   // make blue tiles
   let currTileCount = 0;
   while (currTileCount < totalCount) {
     const currRow = Math.floor(Math.random() * HEIGHT).toString();
     const currCol = Math.floor(Math.random() * WIDTH).toString();
-    if (!colors[currRow]) {
-      colors[currRow] = {};
-      colors[currRow][currCol] = color;
+    if (!colorCoords[currRow]) {
+      colorCoords[currRow] = {};
+      colorCoords[currRow][currCol] = color;
       currTileCount++;
-    } else if (!colors[currRow][currCol]) {
-      colors[currRow][currCol] = color;
+    } else if (!colorCoords[currRow][currCol]) {
+      colorCoords[currRow][currCol] = color;
       currTileCount++;
     }
   }
+  return colorCoords;
 };
 
-const createColorSecrets = () => {
+const createColorCoords = () => {
+  let colorCoords = {};
   // make blue
-  generateTileCoordinates('#5386E4', BLUE_TILE_COUNT);
+  colorCoords = addTileColorCoords(colorCoords, '#5386E4', BLUE_TILE_COUNT);
   // make red
-  generateTileCoordinates('#D80032', RED_TILE_COUNT);
+  colorCoords = addTileColorCoords(colorCoords, '#D80032', RED_TILE_COUNT);
   // make black
-  generateTileCoordinates('black', BLACK_TILE_COUNT);
+  colorCoords = addTileColorCoords(colorCoords, 'black', BLACK_TILE_COUNT);
+  return colorCoords;
 };
 
 const pickRandomWord = () => {
@@ -63,7 +68,7 @@ const pickRandomWord = () => {
 };
 
 const createBoard = () => {
-  createColorSecrets();
+  let colors = createColorCoords();
   let usedWords = [];
   for (let row = 0; row < HEIGHT; row++) {
     let currRowData = [];
@@ -105,6 +110,7 @@ newGameBtn.addEventListener('click', function () {
 spymasterBtn.addEventListener('click', function () {
   spymaster = true;
   spymasterBtn.remove();
+  socket.emit('addSpymaster', { handle: handle.value });
 });
 
 signUpBtn.addEventListener('click', function () {
@@ -112,10 +118,13 @@ signUpBtn.addEventListener('click', function () {
   socket.emit('addPlayer', { handle: handle.value });
   handle.remove();
   signUpBtn.remove();
+  spymasterBtn.hidden = false;
 });
 
 const sendFlipCardEvent = (row, col) => {
-  if (!spymaster) {
+  if (!myHandle) {
+    alert('Wait for next game bro');
+  } else if (!spymaster) {
     socket.emit('flipCard', { row, col, boardData });
   }
 };
@@ -129,22 +138,27 @@ window.onbeforeunload = () => {
 //////
 
 socket.on('requestData', function (data) {
-  socket.emit('syncInitialData', { playersData });
+  socket.emit('syncInitialData', { playersData, boardData });
 });
 
 socket.on('syncInitialData', function (data) {
-  const hasNoPlayersYet = playersData.length === 0;
+  const haventSyncedYet = playersData.length === 0;
 
-  if (hasNoPlayersYet) {
+  if (haventSyncedYet) {
     playersData = data.playersData;
     playersData.forEach((handle) => addPlayer({ handle }));
+
+    if (data.boardData.length !== 0) {
+      boardData = data.boardData;
+      drawBoardElements(data);
+      homePage.remove();
+    }
   }
 });
 
 socket.on('newGame', function (data) {
   drawBoardElements(data);
-  newGameBtn.remove();
-  spymasterBtn.remove();
+  homePage.remove();
 });
 
 socket.on('flipCard', function (data) {
@@ -153,6 +167,10 @@ socket.on('flipCard', function (data) {
 
 socket.on('addPlayer', function (data) {
   addPlayer(data);
+});
+
+socket.on('addSpymaster', function (data) {
+  addSpymaster(data);
 });
 
 socket.on('removePlayer', function (data) {
@@ -203,9 +221,16 @@ const addPlayer = (data) => {
   players.appendChild(newPlayer);
 };
 
+const addSpymaster = (data) => {
+  const handle = data.handle;
+  const handleDiv = document.getElementsByClassName(`${handle}`)[0];
+  let spymasterLabel = document.createElement('span');
+  spymasterLabel.innerHTML = ' - spymaster ';
+  handleDiv.append(spymasterLabel);
+};
+
 const removePlayerElement = (data) => {
   //remove div
-  console.log('before', playersData);
   const handleToRemove = data.handleToRemove;
   const divToRemove = document.getElementsByClassName(`${handleToRemove}`)[0];
   divToRemove.remove();

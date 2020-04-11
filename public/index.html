@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chatroom</title>
+  <title>Covidnames</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="styles.css" rel="stylesheet" />
@@ -13,32 +13,18 @@
 
 </head>
 <body>
-  <div id="board" class="m-5">   
-  </div>
-  <!-- <div id="mario-chat">
-    <div id="chat-window">
-      <div id="output">
-      </div>
-      <div id="feedback">
-      </div>
-    </div>
-    <input id="handle" type="text" placeholder="Handle" />
-    <input id="message" type="text" placeholder="Message" />
-    <button id="send">Send</button>  
-  </div> -->
-  
-  <button id="new-game">Start Game</button>
-  
-  <button id="spymaster">Make me spymaster</button>
-
-  <div id="players">Players</div>
+<div id="board" class="m-5">   
+</div>
+<div id="players">Players</div>
+<div id="homepage">   
+  <button id="new-game">Start Game</button> 
+  <button hidden id="spymaster">Make me spymaster</button>
   <form id="sign-up-form">
     <input id="handle" type="text" placeholder="Enter your name" />
     <button id="sign-up">Sign up</button>  
   </form>
-
-
-  <script src="/frontend.js"></script>
+</div>
+<script src="/frontend.js"></script>
   
 </body>
 </html>

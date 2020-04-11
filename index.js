@@ -37,6 +37,10 @@ io.on('connection', function (socket) {
     io.sockets.emit('addPlayer', data);
   });
 
+  socket.on('addSpymaster', function (data) {
+    io.sockets.emit('addSpymaster', data);
+  });
+
   socket.on('removePlayer', function (data) {
     io.sockets.emit('removePlayer', data);
   });

@@ -249,12 +249,25 @@ const flipCardElement = (data) => {
   const card = document.getElementsByClassName(`${row}-${col}`)[0];
   const flippedCardColor = gameState.boardData[row][col].color;
   const { currBlue, totalBlue, currRed, totalRed } = gameState.scoreboard;
-  if (flippedCardColor === BLUE_TILE_COLOR) {
+  if (flippedCardColor === BLUE_TILE_COLOR && card.style.color !== 'white') {
     gameState.scoreboard.currBlue++;
     scoreboardDiv.innerHTML = `Blue: ${gameState.scoreboard.currBlue}/${totalBlue} ; Red: ${currRed}/${totalRed}`;
-  } else if (flippedCardColor === RED_TILE_COLOR) {
+    if (gameState.scoreboard.currBlue === totalBlue) {
+      let winBannerDiv = document.createElement('h1');
+      winBannerDiv.innerHTML = 'blue wins!!';
+      board.prepend(winBannerDiv);
+    }
+  } else if (
+    flippedCardColor === RED_TILE_COLOR &&
+    card.style.color !== 'white'
+  ) {
     gameState.scoreboard.currRed++;
     scoreboardDiv.innerHTML = `Blue: ${currBlue}/${totalBlue} - Red: ${gameState.scoreboard.currRed}/${totalRed}`;
+    if (gameState.scoreboard.currRed === totalRed) {
+      let winBannerDiv = document.createElement('h1');
+      winBannerDiv.innerHTML = 'red wins!!';
+      board.prepend(winBannerDiv);
+    }
   }
   card.style.backgroundColor = flippedCardColor;
   card.style.color = 'white';
@@ -277,7 +290,6 @@ const addSpymaster = (data) => {
 };
 
 const endGame = () => {
-  // console.log()
   gameState = {
     boardData: [],
     playersData: [],

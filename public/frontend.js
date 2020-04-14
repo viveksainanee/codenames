@@ -1,7 +1,7 @@
 //Make connection
 
-const PORT = 'codenames.sainanee.com';
-// const PORT = 'localhost:4000';
+// const PORT = 'codenames.sainanee.com';
+const PORT = 'localhost:4000';
 
 const socket = io.connect(`http://${PORT}`);
 
@@ -10,13 +10,16 @@ const homePage = document.getElementById('homepage');
 const newGameBtn = document.getElementById('new-game');
 const signUpBtn = document.getElementById('sign-up');
 let spymasterBtn = document.getElementById('spymaster');
+let flipTimerBtn;
 let endGameBtn;
 
 const board = document.getElementById('board');
 const handle = document.getElementById('handle');
 const players = document.getElementById('players');
+const timerDiv = document.getElementById('timer');
+
 const gameDataDiv = document.getElementById('game-data');
-let scoreboardDiv;
+const scoreboardDiv = document.getElementById('scoreboard');
 
 const WIDTH = 5;
 const HEIGHT = 5;
@@ -151,6 +154,10 @@ const sendFlipCardEvent = (row, col) => {
   }
 };
 
+const flipTimerEvent = () => {
+  socket.emit('flipTimer');
+};
+
 const endGameEvent = () => {
   socket.emit('endGame');
 };
@@ -198,6 +205,10 @@ socket.on('addSpymaster', function (data) {
   addSpymaster(data);
 });
 
+socket.on('flipTimer', function (data) {
+  flipTimer();
+});
+
 socket.on('endGame', function (data) {
   endGame();
 });
@@ -214,7 +225,11 @@ const drawBoardElements = (data) => {
   gameState.boardData = data.boardData;
   gameState.scoreboard = data.scoreboard;
 
-  scoreboardDiv = document.createElement('div');
+  flipTimerBtn = document.createElement('button');
+  flipTimerBtn.innerText = 'Flip Timer';
+  flipTimerBtn.addEventListener('click', flipTimerEvent);
+  players.appendChild(flipTimerBtn);
+
   scoreboardDiv.innerHTML = `Blue: 0/${gameState.scoreboard.totalBlue} - Red: 0/${gameState.scoreboard.totalRed}`;
   players.appendChild(scoreboardDiv);
 
@@ -238,6 +253,7 @@ const drawBoardElements = (data) => {
     container.appendChild(row);
   }
   board.appendChild(container);
+
   endGameBtn = document.createElement('button');
   endGameBtn.innerText = 'End Game';
   endGameBtn.addEventListener('click', endGameEvent);
@@ -253,7 +269,7 @@ const flipCardElement = (data) => {
   const { currBlue, totalBlue, currRed, totalRed } = gameState.scoreboard;
   if (flippedCardColor === BLUE_TILE_COLOR && card.style.color !== 'white') {
     gameState.scoreboard.currBlue++;
-    scoreboardDiv.innerHTML = `Blue: ${gameState.scoreboard.currBlue}/${totalBlue} ; Red: ${currRed}/${totalRed}`;
+    scoreboardDiv.innerHTML = `Blue: ${gameState.scoreboard.currBlue}/${totalBlue} - Red: ${currRed}/${totalRed}`;
     if (gameState.scoreboard.currBlue === totalBlue) {
       let winBannerDiv = document.createElement('h1');
       winBannerDiv.innerHTML = 'blue wins!!';
@@ -289,6 +305,15 @@ const addSpymaster = (data) => {
   let spymasterLabel = document.createElement('span');
   spymasterLabel.innerHTML = ' - spymaster ';
   handleDiv.append(spymasterLabel);
+};
+
+const flipTimer = () => {
+  let currTimeLeft = 120;
+  setInterval(() => {
+    currTimeLeft--;
+    timerDiv.innerText = currTimeLeft;
+  }, 1000);
+  // TODO: need clearInterval when button is pressed and conditional logic when timer hits 0
 };
 
 const endGame = () => {

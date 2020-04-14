@@ -41,6 +41,10 @@ io.on('connection', function (socket) {
     io.sockets.emit('addSpymaster', data);
   });
 
+  socket.on('flipTimer', function (data) {
+    io.sockets.emit('flipTimer', data);
+  });
+
   socket.on('endGame', function (data) {
     io.sockets.emit('endGame', data);
   });

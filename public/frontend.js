@@ -1,7 +1,7 @@
 //Make connection
 
-// const PORT = 'codenames.sainanee.com';
-const PORT = 'localhost:4000';
+const PORT = 'codenames.sainanee.com';
+// const PORT = 'localhost:4000';
 
 const socket = io.connect(`http://${PORT}`);
 
@@ -11,6 +11,7 @@ const newGameBtn = document.getElementById('new-game');
 const signUpBtn = document.getElementById('sign-up');
 let spymasterBtn = document.getElementById('spymaster');
 let flipTimerBtn;
+let timerFn;
 let endGameBtn;
 
 const board = document.getElementById('board');
@@ -308,12 +309,17 @@ const addSpymaster = (data) => {
 };
 
 const flipTimer = () => {
+  clearInterval(timerFn);
   let currTimeLeft = 120;
-  setInterval(() => {
+  timerFn = setInterval(() => {
     currTimeLeft--;
-    timerDiv.innerText = currTimeLeft;
+    const currMinLeft = Math.floor(currTimeLeft / 60);
+    let currSecLeft = (currTimeLeft % 60).toString();
+    if (currSecLeft.length === 1) {
+      currSecLeft = '0' + currSecLeft;
+    }
+    timerDiv.innerText = `${currMinLeft}:${currSecLeft}`;
   }, 1000);
-  // TODO: need clearInterval when button is pressed and conditional logic when timer hits 0
 };
 
 const endGame = () => {

@@ -18,6 +18,7 @@ const board = document.getElementById('board');
 const handle = document.getElementById('handle');
 const players = document.getElementById('players');
 const timerDiv = document.getElementById('timer');
+const timerInfoDiv = document.getElementById('timer-info');
 
 const gameDataDiv = document.getElementById('game-data');
 const scoreboardDiv = document.getElementById('scoreboard');
@@ -229,19 +230,19 @@ const drawBoardElements = (data) => {
   flipTimerBtn = document.createElement('button');
   flipTimerBtn.innerText = 'Flip Timer';
   flipTimerBtn.addEventListener('click', flipTimerEvent);
-  players.appendChild(flipTimerBtn);
+  timerInfoDiv.appendChild(flipTimerBtn);
 
   scoreboardDiv.innerHTML = `Blue: 0/${gameState.scoreboard.totalBlue} - Red: 0/${gameState.scoreboard.totalRed}`;
   players.appendChild(scoreboardDiv);
 
   let container = document.createElement('div');
-  container.setAttribute('class', 'container');
+  container.setAttribute('class', 'container-fluid p-0 m-0');
   for (let rowIdx = 0; rowIdx < gameState.boardData.length; rowIdx++) {
     let row = document.createElement('div');
-    row.setAttribute('class', 'row');
+    row.setAttribute('class', 'row p-0');
     for (let colIdx = 0; colIdx < gameState.boardData.length; colIdx++) {
       let card = document.createElement('div');
-      card.setAttribute('class', `card ${rowIdx}-${colIdx} text-center`);
+      card.setAttribute('class', `col-2 card ${rowIdx}-${colIdx} text-center`);
       card.innerHTML += `${gameState.boardData[rowIdx][colIdx].word}`;
       // for spymasters only
       if (spymaster) {

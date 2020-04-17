@@ -1,6 +1,13 @@
 h1 {
-  margin: 50px;
+  margin-top: 50px;
   font-weight: 800;
+  font-size: 48px;
+}
+
+#timer {
+  margin-top: 20px;
+  font-weight: 800;
+  font-size: 48px;
 }
 
 body {
@@ -8,6 +15,14 @@ body {
   background-color: #504e4e;
   color: white;
   text-align: center;
+}
+
+#timer-info {
+  font-weight: 800;
+}
+
+#players {
+  font-weight: 800;
 }
 
 .card {

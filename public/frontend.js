@@ -80,9 +80,7 @@ const createColorCoords = () => {
 };
 
 const pickRandomWord = () => {
-  return covidWords[
-    Math.floor(Math.random() * covidWords.length)
-  ].toUpperCase();
+  return words[Math.floor(Math.random() * words.length)].toUpperCase();
 };
 
 const createBoard = () => {

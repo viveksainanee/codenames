@@ -80,7 +80,15 @@ const createColorCoords = () => {
 };
 
 const pickRandomWord = () => {
-  return words[Math.floor(Math.random() * words.length)].toUpperCase();
+  const packType = document.getElementById('packs-dropdown');
+  console.log(packType.value);
+  if (packType.value === 'covid') {
+    return covidWords[
+      Math.floor(Math.random() * covidWords.length)
+    ].toUpperCase();
+  } else {
+    return words[Math.floor(Math.random() * words.length)].toUpperCase();
+  }
 };
 
 const createBoard = () => {

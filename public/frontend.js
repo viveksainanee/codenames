@@ -1,6 +1,6 @@
 //Make connection
 
-const PORT = "master--papaya-chebakia-2bb10a.netlify.app";
+const PORT = "codenames.sainanee.com";
 // const PORT = "localhost:4000";
 
 const socket = io.connect(`http://${PORT}`);

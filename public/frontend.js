@@ -3,7 +3,7 @@
 const PORT = "codenames.sainanee.com";
 // const PORT = "localhost:4000";
 
-const socket = io.connect(`http://${PORT}`);
+const socket = io.connect(`https://${PORT}`);
 
 const homePage = document.getElementById("homepage");
 

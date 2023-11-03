@@ -1,51 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Codenames</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <link href="styles.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:300,800" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codenames</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <link href="styles.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:300,800"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="homepage">
+      <h1>Codenames</h1>
+      <div class="container-fluid p-0 m-0">
+        <div class="row"></div>
 
-</head>
-<body>
-  <div id="homepage">  
-    <h1>Codenames</h1>
-    <div class="container-fluid p-0 m-0">
-      <div class="row"></div>
+        <button hidden id="spymaster">Make me spymaster</button>
+        <form id="sign-up-form">
+          <input id="handle" type="text" placeholder="Enter your name" />
+          <input name="chrome-autofill-dummy1" style="display: none" disabled />
+          <input name="chrome-autofill-dummy2" style="display: none" disabled />
+          <button id="sign-up">Sign up</button>
+        </form>
+      </div>
+      <br />
 
-      <button hidden id="spymaster">Make me spymaster</button>
-      <form id="sign-up-form">
-        <input id="handle" type="text" placeholder="Enter your name" />
-        <input name="chrome-autofill-dummy1" style='display:none' disabled/>
-        <input name="chrome-autofill-dummy2" style='display:none' disabled/>
-        <button id="sign-up">Sign up</button>  
-      </form>
-  </div>
-    <br>
-
-    Pick a pack, and when everyone is signed up, press new game!
-    <div id="packs"> 
-      <select id="packs-dropdown">
-        <option value="quarantine">Quarantine</option>
-        <option value="foods">Foods</option>
-        <option value="sports">Sports</option>
-        <option value="regular">Regular</option>
-      </select>
+      Pick a pack, and when everyone is signed up, press new game!
+      <div id="packs">
+        <select id="packs-dropdown">
+          <option value="regular">Regular</option>
+          <option value="quarantine">Covid-themed</option>
+          <option value="foods">Foods</option>
+          <option value="sports">Sports</option>
+        </select>
+      </div>
+      <button id="new-game">New Game</button>
     </div>
-    <button id="new-game">New Game</button> 
-  </div>
-  <div id="timer-info">
-    <div id="timer"></div>
-  </div>
-  <div id="board" class="m-5"></div>
-  <div id="game-data">
-    <div id="scoreboard"></div>
-    <div id="players">Players:</div>
-  </div>
-<script src="/frontend.js"></script>
-  
-</body>
+    <div id="timer-info">
+      <div id="timer"></div>
+    </div>
+    <div id="board" class="m-5"></div>
+    <div id="game-data">
+      <div id="scoreboard"></div>
+      <div id="players">Players:</div>
+    </div>
+    <script src="frontend.js"></script>
+  </body>
 </html>
